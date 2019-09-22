@@ -1,58 +1,39 @@
 <?php
-class QueryBuilder
+class DeleteSearch
 {
 	protected $pdo;
-	public function __construct($pdo)
+	public function __construct($pdo)// make connection whe any function ic called in QueryBuilder  class
 	{
 		$this->pdo = $pdo;
 	}
-	public function selectAll($table)
+	public function selectTwenty($table)
 	{
-		$statement = $this->pdo->prepare("select * from {$table} ORDER BY searchWordCount DESC");
+		$statement = $this->pdo->prepare("select * from {$table} ORDER BY searchWordCount DESC  LIMIT 20");
 		$statement->execute();
 		return $statement->fetchAll(PDO::FETCH_CLASS);
 	}
-	
-	public function insert($table, $searchString,$searchCount,$date)
-	{
-		$stmt =  $this->pdo->prepare("select * from {$table} WHERE searchWord = '$searchString'");
-		$stmt->bindParam(1, $_GET['searchWord'], PDO::PARAM_INT);
+	public function insert($table,$table2, $searchDelete){
+		$searchDelete =str_replace("'", "\'",$searchDelete);
+		$stmt =  $this->pdo->prepare("select * from {$table2} WHERE notalloud ='$searchDelete'");
+		
+		//if  dosen't exists insert new record
+		$stmt->bindParam(1, $_GET['notalloud'], PDO::PARAM_INT);
 		$stmt->execute();
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
-		
-		if( ! $row)
-		{
-			$newSearch = $this->pdo->prepare("INSERT INTO {$table}(searchWord, searchWordCount, created_at)
-				VALUES ('$searchString','$searchCount','$date')");
-			$newSearch->execute();
+		if (!$row) {
+			$stm = $this->pdo->prepare("INSERT INTO {$table2}(notalloud)
+				VALUES ('$searchDelete')");
+			$stm->execute();
 		}else{
-			$update = $this->pdo->prepare("update new_search set searchWordCount= searchWordCount+1 where searchword = '$searchString'");
-			$update->execute();
+			
 		}
-	}
-	public function insertArray($table,$searchArray, $searchCount,$date)
-	{
-		foreach ($searchArray as $value) {
-
-			$stmt =  $this->pdo->prepare("select * from {$table} WHERE searchWord = '$value'");
-			$stmt->bindParam(1, $_GET['searchWord'], PDO::PARAM_INT);
-			$stmt->execute();
-			$row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-			if( ! $row)
-			{
-				$newSearch = $this->pdo->prepare("INSERT INTO {$table}(searchWord, searchWordCount, created_at)
-					VALUES ('$value','$searchCount','$date')");
-				$newSearch->execute();
-			}else{
-				$update = $this->pdo->prepare("update new_search set searchWordCount= searchWordCount+1 where searchword = '$value'");
-				$update->execute();
-			}
-		}
-
-
-
 		
+	}
+	public function delete($table,$table2, $searchDelete){
+		
+		$searchDelete =str_replace("'", "\'",$searchDelete);
+		$stmt =  $this->pdo->prepare("delete from {$table} WHERE searchWord ='$searchDelete'");
+		$stmt->execute();
 		
 	}
 }
